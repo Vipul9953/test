@@ -4,9 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:docker": "docker compose up -d --wait && npm run db:migrate && next dev",
-    "dev:local": "npm run db:migrate && next dev",
-    "dev:all": "npm run dev:docker",
+    "dev:up": "npm run db:migrate && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
