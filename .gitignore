@@ -42,8 +42,3 @@ next-env.d.ts
 
 # local notes — do not publish
 /docs/
-
-# database schema, migrations, and local postgres
-/db/
-/docker-compose.yml
-/drizzle.config.ts
