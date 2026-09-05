@@ -11,6 +11,8 @@ export const INITIAL_CREDITS = 100;
 export const SUBSCRIBE_MESSAGE = "Please subscribe";
 
 export const IMAGE_RENDER_DELAY_MS = 20_000;
+/** Heartbeat while the image delay runs so SSE is not silent. */
+export const IMAGE_STREAM_TICK_MS = 1_000;
 
 export const CREDIT_ESTIMATE = {
   image: 4,

@@ -18,7 +18,9 @@ const PartialStreamSchema = z.discriminatedUnion("kind", [
   z.object({
     type: z.literal("partial"),
     kind: z.literal("image"),
-    content: ImageContentSchema.partial(),
+    content: ImageContentSchema.partial().extend({
+      progress: z.number().min(0).max(1).optional(),
+    }),
   }),
   z.object({
     type: z.literal("partial"),

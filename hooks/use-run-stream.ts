@@ -52,12 +52,14 @@ function applyEvent(run: LiveCanvasRun, raw: string): LiveCanvasRun {
 
   if (event.type === "partial") {
     if (event.kind === "image") {
+      const previous =
+        run.content?.kind === "image" ? run.content.content : {};
       return {
         ...run,
         status: "dispatched",
         content: {
           kind: "image",
-          content: event.content,
+          content: { ...previous, ...event.content },
         },
       };
     }

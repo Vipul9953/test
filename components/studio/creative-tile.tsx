@@ -214,9 +214,16 @@ function TileBody({ run }: { run: LiveCanvasRun }) {
   }
 
   if (run.kind === "image") {
-    const url = run.content && "url" in run.content.content ? run.content.content.url : undefined;
+    const imagePartial =
+      run.content && run.content.kind === "image" ? run.content.content : undefined;
+    const url = imagePartial && "url" in imagePartial ? imagePartial.url : undefined;
     if (!url) {
-      return <SkeletonBlock label="Painting a placeholder frame" />;
+      return (
+        <SkeletonBlock
+          label="Painting a placeholder frame"
+          progress={imagePartial?.progress}
+        />
+      );
     }
     const imageMeta =
       run.content && run.content.kind === "image" ? run.content.content : undefined;
@@ -281,13 +288,33 @@ function TileBody({ run }: { run: LiveCanvasRun }) {
   );
 }
 
-function SkeletonBlock({ label }: { label: string }) {
+function SkeletonBlock({
+  label,
+  progress,
+}: {
+  label: string;
+  progress?: number;
+}) {
+  const percent =
+    progress != null ? Math.round(Math.min(1, Math.max(0, progress)) * 100) : null;
+
   return (
     <div className="flex min-h-40 flex-col justify-end gap-3">
       <div className="h-4 w-2/3 animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-800" />
       <div className="h-3 w-full animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-900" />
       <div className="h-3 w-5/6 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-900" />
-      <p className="text-[11px] text-zinc-400">{label}…</p>
+      {percent != null ? (
+        <div className="h-1 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+          <div
+            className="h-full rounded-full bg-amber-500 transition-[width] duration-300"
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+      ) : null}
+      <p className="text-[11px] text-zinc-400">
+        {label}
+        {percent != null ? ` ${percent}%` : "…"}
+      </p>
     </div>
   );
 }

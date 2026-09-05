@@ -20,7 +20,7 @@ export const CanvasRunSchema = z.object({
 type CanvasRun = z.infer<typeof CanvasRunSchema>;
 
 export type LiveArtifactContent =
-  | { kind: "image"; content: { url?: string } }
+  | { kind: "image"; content: { url?: string; progress?: number } }
   | {
       kind: "landing-page";
       content: {

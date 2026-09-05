@@ -1,4 +1,4 @@
-import { IMAGE_RENDER_DELAY_MS } from "@/lib/constants";
+import { IMAGE_RENDER_DELAY_MS, IMAGE_STREAM_TICK_MS } from "@/lib/constants";
 import type { AspectRatio, ImageStyle } from "@/lib/validations/image-options";
 import type {
   ArtifactContent,
@@ -9,7 +9,7 @@ import { RenderAbortedError } from "@/services/errors";
 import { renderCopy } from "./copy";
 import { renderImage } from "./image";
 
-function waitForImageDelay(signal: AbortSignal, ms = IMAGE_RENDER_DELAY_MS): Promise<void> {
+function sleep(ms: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     if (signal.aborted) {
       reject(new RenderAbortedError());
@@ -30,6 +30,26 @@ function waitForImageDelay(signal: AbortSignal, ms = IMAGE_RENDER_DELAY_MS): Pro
   });
 }
 
+/** Hold for the full image delay, emitting a progress partial every second. */
+async function streamImageDelay(
+  signal: AbortSignal,
+  onTick: (progress: number) => void,
+  ms = IMAGE_RENDER_DELAY_MS,
+): Promise<void> {
+  const started = Date.now();
+  onTick(0);
+
+  while (Date.now() - started < ms) {
+    if (signal.aborted) {
+      throw new RenderAbortedError();
+    }
+
+    const remaining = ms - (Date.now() - started);
+    await sleep(Math.min(IMAGE_STREAM_TICK_MS, remaining), signal);
+    onTick(Math.min(1, (Date.now() - started) / ms));
+  }
+}
+
 export type RenderPartialEmit = (
   event: Extract<StreamEvent, { type: "partial" }>,
 ) => void;
@@ -48,8 +68,9 @@ export async function renderCreative(input: {
   }
 
   if (input.kind === "image") {
-    input.onPartial({ type: "partial", kind: "image", content: {} });
-    await waitForImageDelay(input.signal);
+    await streamImageDelay(input.signal, (progress) => {
+      input.onPartial({ type: "partial", kind: "image", content: { progress } });
+    });
     const content = renderImage(input.runId, {
       aspectRatio: input.aspectRatio,
       imageStyle: input.imageStyle,
